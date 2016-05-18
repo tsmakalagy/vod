@@ -210,35 +210,14 @@ void MoFREAKUtilities::computeMoFREAKFromFile(std::string video_filename, std::s
 		vector<cv::KeyPoint> keypoints, diff_keypoints;
 		cv::Mat descriptors;
 
-		// detect all keypoints.
-		//cv::BriskFeatureDetector *detector = new cv::BriskFeatureDetector(30);
-		//cv::BriskFeatureDetector *diff_detector = new cv::BriskFeatureDetector(30);
-		//detector->detect(current_frame, keypoints);
-		//diff_detector->detect(diff_img, keypoints);
-
-		// extract the FREAK descriptors efficiently over the whole frame
-		// For now, we are just computing the motion FREAK!  It seems to be giving better results.
-		//cv::FREAK extractor;
-		//extractor.compute(diff_img, keypoints, descriptors);
-		
-		// detect all keypoints.
-		//cv::BriskFeatureDetector *detector = new cv::BriskFeatureDetector(30);
-		//cv::BriskFeatureDetector *diff_detector = new cv::BriskFeatureDetector(30);
-
+		// detect all keypoints.		
 		cv::Ptr<cv::BRISK> ptrBrisk = cv::BRISK::create(30);
-		ptrBrisk->detect(diff_img, keypoints);
-
-		//detector->detect(current_frame, keypoints);
-		//diff_detector->detect(diff_img, keypoints);
+		ptrBrisk->detect(diff_img, keypoints);		
 
 		// extract the FREAK descriptors efficiently over the whole frame
 		// For now, we are just computing the motion FREAK!  It seems to be giving better results.
 		cv::Ptr<cv::xfeatures2d::FREAK> ptrFreak = cv::xfeatures2d::FREAK::create();
 		ptrFreak->compute(diff_img, keypoints, descriptors);
-		//cv::xfeatures2d::FREAK extractor;
-		//extractor.compute(diff_img, keypoints, descriptors);
-		//cout << "--------------------------------" << keypoints.size() << " detected features" << endl;
-		
 
 		// for each detected keypoint
 		vector<cv::KeyPoint> current_frame_keypts;
