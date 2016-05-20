@@ -279,7 +279,7 @@ void MoFREAKUtilities::computeMoFREAKFromFile(std::string video_filename, std::s
 	}
 
 	// in the end, print the mofreak file and reset the features for a new file.
-	cout << "Writing this mofreak file: " << mofreak_filename << endl;
+	cout << "Writing this mofreak files: " << mofreak_filename << endl;
 	writeMoFREAKFeaturesToFile(mofreak_filename);
 
 	if (clear_features_after_computation)
