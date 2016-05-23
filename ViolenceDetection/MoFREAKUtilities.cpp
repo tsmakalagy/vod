@@ -1,5 +1,22 @@
 #include "MoFREAKUtilities.h"
 
+MoFREAKUtilities::MoFREAKUtilities(int dset)
+{
+	dataset = dset;
+}
+
+// vanilla string split operation.  Direct copy-paste from stack overflow
+// source: http://stackoverflow.com/questions/236129/splitting-a-string-in-c
+std::vector<std::string> &MoFREAKUtilities::split(const std::string &s, char delim, std::vector<std::string> &elems) {
+	std::stringstream ss(s);
+	std::string item;
+	while (std::getline(ss, item, delim)) {
+		elems.push_back(item);
+	}
+	return elems;
+}
+
+
 std::vector<std::string> MoFREAKUtilities::split(const std::string &s, char delim) {
     std::vector<std::string> elems;
     return split(s, delim, elems);
@@ -285,4 +302,123 @@ void MoFREAKUtilities::computeMoFREAKFromFile(std::string video_filename, std::s
 	if (clear_features_after_computation)
 		features.clear();
 
+}
+
+void MoFREAKUtilities::writeMoFREAKFeaturesToFile(string output_file)
+{
+	ofstream f(output_file);
+
+	for (auto it = features.begin(); it != features.end(); ++it)
+	{
+		// basics
+		f << it->x << " " << it->y << " " << it->frame_number
+			<< " " << it->scale << " " << it->motion_x << " " << it->motion_y << " ";
+
+		// FREAK
+		for (int i = 0; i < NUMBER_OF_BYTES_FOR_APPEARANCE; ++i)
+		{
+			//int z = it->appearance[i];
+			f << it->appearance[i] << " ";
+			//f << toBinaryString(z) << " ";
+		}
+
+		// motion
+		for (int i = 0; i < NUMBER_OF_BYTES_FOR_MOTION; ++i)
+		{
+			int z = it->motion[i];
+			f << z << " ";
+		}
+		f << "\n";
+	}
+
+	f.close();
+}
+
+void MoFREAKUtilities::setCurrentAction(string folder_name)
+{
+	if (dataset == UCF101)
+	{
+		// This is the right way to do this.  Verify that it works,
+		// Then replace the other examples.
+		if (actions.find(folder_name) == actions.end())
+		{
+			actions[folder_name] = actions.size();
+		}
+
+		current_action = actions[folder_name];
+	}
+}
+
+void MoFREAKUtilities::readMetadata(std::string filename, int &action, int &video_number, int &person)
+{
+	boost::filesystem::path file_path(filename);
+	boost::filesystem::path file_name = file_path.filename();
+	std::string file_name_str = file_name.generic_string();
+
+	if (dataset == KTH)
+	{
+		// get the action.
+		if (boost::contains(file_name_str, "boxing"))
+		{
+			action = BOXING;
+		}
+		else if (boost::contains(file_name_str, "walking"))
+		{
+			action = WALKING;
+		}
+		else if (boost::contains(file_name_str, "jogging"))
+		{
+			action = JOGGING;
+		}
+		else if (boost::contains(file_name_str, "running"))
+		{
+			action = RUNNING;
+		}
+		else if (boost::contains(file_name_str, "handclapping"))
+		{
+			action = HANDCLAPPING;
+		}
+		else if (boost::contains(file_name_str, "handwaving"))
+		{
+			action = HANDWAVING;
+		}
+		else
+		{
+			action = HANDWAVING; // hopefully we never miss this?  Just giving a default value. 
+		}
+
+
+		// parse the filename...
+		std::vector<std::string> filename_parts = split(file_name_str, '_');
+
+		// the person is the last 2 characters of the first section of the filename.
+		std::stringstream(filename_parts[0].substr(filename_parts[0].length() - 2, 2)) >> person;
+
+		// the video number is the last character of the 3rd section of the filename.
+		std::stringstream(filename_parts[2].substr(filename_parts[2].length() - 1, 1)) >> video_number;
+	}
+
+	else if (dataset == HMDB51)
+	{
+		video_number = 0;
+		person = 0;
+		action = current_action;
+	}
+
+	else if (dataset == UTI2)
+	{
+		// parse the filename.
+		std::vector<std::string> filename_parts = split(file_name_str, '_');
+
+		// the "person" (video) is the number after the first underscore.
+		std::string person_str = filename_parts[1];
+		std::stringstream(filename_parts[1]) >> person;
+
+		// the action is the number after the second underscore, before .avi.
+		std::string vid_str = filename_parts[2];
+		std::stringstream(filename_parts[2].substr(0, 1)) >> action;
+
+		// video number.. not sure if useful for this dataset.
+		std::stringstream(filename_parts[0]) >> video_number;
+	}
 }

@@ -21,6 +21,8 @@ using namespace std;
 #define MOTION_BYTES 8
 #define APPEARANCE_BYTES 8
 
+enum KTH_action { BOXING, HANDCLAPPING, HANDWAVING, JOGGING, RUNNING, WALKING };
+
 struct MoFREAKFeature
 {
 	MoFREAKFeature(int motion_bytes, int appearance_bytes) 
